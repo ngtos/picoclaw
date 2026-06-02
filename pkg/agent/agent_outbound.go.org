@@ -77,17 +77,11 @@ func (al *AgentLoop) PublishResponseIfNeeded(ctx context.Context, channel, chatI
 	msg := bus.OutboundMessage{
 		Context:    bus.NewOutboundContext(channel, chatID, ""),
 		SessionKey: sessionKey,
-                //added by steven/gemini
-		//Content:    response,
-                Content:    utils.ConvertLatexToUnicode(response),
+		Content:    response,
 	}
 	if sessionKey != "" {
 		msg.ContextUsage = computeContextUsage(al.agentForSession(sessionKey), sessionKey)
 	}
-        //added steven
-        // msg.Content = util.FormatText(msg.Content)
-        // end
-
 	markFinalOutbound(&msg)
 	al.bus.PublishOutbound(ctx, msg)
 	logger.InfoCF("agent", "Published outbound response",
@@ -135,8 +129,7 @@ func (al *AgentLoop) publishPicoReasoning(
 			Raw:     raw,
 		},
 		SessionKey: sessionKey,
-		// Content:    reasoningContent,
-                Content: utils.ConvertLatexToUnicode(reasoningContent),
+		Content:    reasoningContent,
 	}); err != nil {
 		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) ||
 			errors.Is(err, bus.ErrBusClosed) {
@@ -279,8 +272,7 @@ func (al *AgentLoop) handleReasoning(
 
 	if err := al.bus.PublishOutbound(pubCtx, bus.OutboundMessage{
 		Context: bus.NewOutboundContext(channelName, channelID, ""),
-		// Content: reasoningContent,
-                Content: utils.ConvertLatexToUnicode(reasoningContent),
+		Content: reasoningContent,
 	}); err != nil {
 		// Treat context.DeadlineExceeded / context.Canceled as expected
 		// (bus full under load, or parent canceled).  Check the error
